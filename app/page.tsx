@@ -10,9 +10,62 @@ export default function Home() {
 3) npx.ps1 권한 이슈해결 > 윈도우 powershell "관리자 권한으로 실행" > cmd 에서 "set-executionpolicy remotesigned" YES
 or "Set-ExecutionPolicy -Scope CurrentUser RemoteSigned" > A
 node -v, npm -v > 통과시 완료
+4) "my-app" 프로젝트 생성 "npx create-next-app@latest my-app
+cd my-app
+5) mysql 연결
+  npm install prima --save-dev
+  npm install @prisma/client
+  npx prisma init              >> prisma/schema.prisma 파일 & .env 파일생성
+6) mysql 연결설정
+  .env 파일에 MySQL 주소 입력: >> 
+  >> DATABASE_URL="mysql://USER:PASSWORD@localhost:3306/mydb" 
+7) Prisma 스키마 작성 (User + Post 예시)        
+   prisma/schema.prisma 수정: >>
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
 
-        
+generator client {
+  provider = "prisma-client-js"
+}
 
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String?
+  createdAt DateTime @default(now())
+}   << 
+
+8) Prisma 클라이언트 설정
+  lib/prisma.js 파일 생성:
+  >> import { PrismaClient } from "@prisma/client"; const prisma = global.prisma || new PrismaClient(); if (process.env.NODE_ENV !== "production") global.prisma = prisma; export default prisma;  
+
+9) -1) CRUD API 만들기 (Next.js API Routes)
+  CREATE (POST)
+  pages/api/posts/index.js
+import prisma from "@/lib/prisma"; export default async function handler(req, res) { if (req.method === "POST") { const { title, content } = req.body; const post = await prisma.post.create({ data: { title, content }, }); return res.status(201).json(post); } res.status(405).json({ message: "Method not allowed" }); }
+9) -2) READ (GET)
+pages/api/posts/index.js에 추가:
+if (req.method === "GET") { const posts = await prisma.post.findMany(); return res.status(200).json(posts); }
+9) -3) UPDATE (PUT)
+pages/api/posts/[id].js
+import prisma from "@/lib/prisma"; export default async function handler(req, res) { const id = Number(req.query.id); if (req.method === "PUT") { const { title, content } = req.body; const post = await prisma.post.update({ where: { id }, data: { title, content }, }); return res.status(200).json(post); } res.status(405).json({ message: "Method not allowed" }); }
+9- 4) DELETE (DELETE)
+pages/api/posts/[id].js에 추가:
+if (req.method === "DELETE") { await prisma.post.delete({ where: { id }, }); return res.status(204).end(); }
+
+9- 5) 프론트에서 CRUD 호출 예시  
+React 컴포넌트에서 CRUD 요청하는 예시:
+import { useEffect, useState } from "react"; import axios from "axios"; export default function Posts() { const [posts, setPosts] = useState([]); const [title, setTitle] = useState(""); 
+  // READ const fetchPosts = async () => { const res = await axios.get("/api/posts"); setPosts(res.data); }; 
+  // CREATE const createPost = async () => { await axios.post("/api/posts", { title }); setTitle(""); fetchPosts(); }; 
+  // DELETE const deletePost = async (id) => { await axios.delete(`/api/posts/${id}`); fetchPosts(); }; useEffect(() => { fetchPosts(); }, []); 
+  return ( <div> <h1>Posts</h1> <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목 입력" /> 
+  <button onClick={createPost}>추가</button> <ul> {posts.map((p) => ( <li key={p.id}> {p.title} <button onClick={() => deletePost(p.id)}>삭제</button> </li> ))} </ul> </div> ); }
+
+  
+  
 ================================================================
         
 [NPM]

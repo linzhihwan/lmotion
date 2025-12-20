@@ -4,7 +4,17 @@ export default function Home() {
   return (
     <>
       <h1>Welcome to My App HOME
+================================================================
+1) VSCODE 다운 및 설치
+2) NODE.JS 다운 및 설치 (윈도운 환경변수 PATH추가 NPM *) NPM, NPX 
+3) npx.ps1 권한 이슈해결 > 윈도우 powershell "관리자 권한으로 실행" > cmd 에서 "set-executionpolicy remotesigned" YES
+or "Set-ExecutionPolicy -Scope CurrentUser RemoteSigned" > A
+node -v, npm -v > 통과시 완료
 
+        
+
+================================================================
+        
 [NPM]
 https://nodejs.org → LTS 버전 다운로드 → 설치할 때 아래 옵션 꼭 체크:
 ✅ Add to PATH 
